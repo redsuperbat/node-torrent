@@ -1,17 +1,25 @@
 {
-  "name": "",
+  "name": "node-torrent",
   "version": "",
   "private": true,
   "scripts": {
-    "serve": "vue-cli-service serve",
+    "watch": "vue-cli-service build --watch",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "start:dev": "concurrently --kill-others \"npm run watch\" \"nodemon ./server/index.js\""
   },
   "dependencies": {
     "core-js": "^3.6.5",
+    "cors": "^2.8.5",
+    "date-fns": "^2.16.1",
+    "express": "^4.17.1",
+    "socket.io": "^3.0.3",
+    "socket.io-client": "^3.0.3",
+    "uuid": "^3.4.0",
     "vue": "^3.0.0",
     "vue-router": "^4.0.0-0",
-    "vuex": "^4.0.0-0"
+    "vuex": "^4.0.0-0",
+    "webtorrent": "^0.112.0"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.0",
@@ -21,8 +29,10 @@
     "@vue/cli-service": "~4.5.0",
     "@vue/compiler-sfc": "^3.0.0",
     "babel-eslint": "^10.1.0",
+    "concurrently": "^5.3.0",
     "eslint": "^6.7.2",
-    "eslint-plugin-vue": "^7.0.0-0"
+    "eslint-plugin-vue": "^7.0.0-0",
+    "nodemon": "^2.0.6"
   },
   "readme": "ERROR: No README data found!"
 }
