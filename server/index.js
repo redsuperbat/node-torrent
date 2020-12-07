@@ -74,11 +74,11 @@ app.post("/torrent", auth, (req, res, next) => {
   console.log(req.body);
   // Checks if user selected a custom directory to save torrent
   // If not defaults to selected predetermied directory
-  const dir = customDirPath ?? (isMovie ? movieDir : seriesDir);
+  const dir = customDirPath || (isMovie ? movieDir : seriesDir);
   torrent.on("metadata", async () => {
     // Checks if user specified a custom name.
     // Defaults to the torrent name if none was specified
-    const userDir = `${dir}/${customName ?? torrent.name}`;
+    const userDir = `${dir}/${customName || torrent.name}`;
     // Save a copy of the userDirectory on the torrent object
     // This is to enable deletion of the files later
     torrent.userDir = userDir;
@@ -86,7 +86,7 @@ app.post("/torrent", auth, (req, res, next) => {
     await new Promise((res) => fs.mkdir(userDir, res));
 
     torrent.files.forEach((f) => {
-      const fullDir = `${dir}/${customName ?? torrent.name}/${f.name}`;
+      const fullDir = `${dir}/${customName || torrent.name}/${f.name}`;
       console.log(fullDir);
       const writeStream = fs.createWriteStream(fullDir);
       const fileStream = f.createReadStream();
@@ -157,9 +157,11 @@ app.delete("/remove/:infoHash", auth, (req, res) => {
     torrent.userDir
   );
   if (removeData) {
-    rimraf(torrent.userDir, () => {
-      console.log("Removed files @", torrent.userDir);
-    });
+    if (torrent.userDir !== "/") {
+      rimraf(torrent.userDir, () => {
+        console.log("Removed files @", torrent.userDir);
+      });
+    }
   }
   client.remove(torrent);
   return res.send();
