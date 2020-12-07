@@ -1,5 +1,6 @@
 const state = require("../tokens");
 const isAfter = require("date-fns/isAfter");
+const add = require("date-fns/add");
 
 module.exports = (req, res, next) => {
   try {
@@ -9,6 +10,8 @@ module.exports = (req, res, next) => {
     if (!tokenId || !token || isAfter(new Date(), token.date)) {
       throw new Error();
     } else {
+      // If token is still valid add 30 secs to timer
+      token.date = add(new Date(), { weeks: 1 });
       next();
     }
   } catch (e) {

@@ -1,12 +1,17 @@
-import { createStore } from 'vuex'
+import { createStore } from "vuex";
+import { io } from "socket.io-client";
 
 export default createStore({
   state: {
+    io: null,
   },
-  mutations: {
-  },
+  mutations: {},
   actions: {
+    INIT_SOCKET: ({ state }) => {
+      state.io = io({ transports: ["websocket"] });
+    },
   },
-  modules: {
-  }
-})
+  getters: {
+    io: (state) => state.io,
+  },
+});
