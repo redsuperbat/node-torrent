@@ -72,7 +72,7 @@ export default {
     });
     const addNewTorrent = async () => {
       loading.value = true;
-      const payload = { magnetUri: magnetUri.value, isMoive: isMovie.value };
+      const payload = { magnetUri: magnetUri.value, isMovie: isMovie.value };
       const res = await client.post("/torrent", payload);
       const data = await res.json();
       torrents.value.push(data);

@@ -22,6 +22,13 @@ const usr = process.env.USER_NAME || "dev";
 const movieDir = process.env.MOVIE_DIR || "./downloads";
 const seriesDir = process.env.SERIES_DIR || "./downloads";
 
+if (!fs.existsSync(movieDir)) {
+  fs.mkdirSync(movieDir);
+}
+if (!fs.existsSync(seriesDir)) {
+  fs.mkdirSync(seriesDir);
+}
+
 // Vue app
 app.use(express.static("dist"));
 
@@ -140,5 +147,5 @@ app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "../dist", "/index.html"));
 });
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3333;
 server.listen(port, () => console.log(`Listening on http://localhost:${port}`));
