@@ -5,7 +5,7 @@
   "scripts": {
     "watch": "vue-cli-service build --watch",
     "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
+    "build": "vue-cli-service build && node ./server/index.js",
     "lint": "vue-cli-service lint",
     "start:dev": "concurrently --kill-others \"npm run watch\" \"nodemon ./server/index.js\""
   },
@@ -17,6 +17,7 @@
     "express": "^4.17.1",
     "primeicons": "^4.1.0",
     "primevue": "^3.0.2",
+    "rimraf": "^2.7.1",
     "rxjs": "^6.6.3",
     "socket.io": "^3.0.3",
     "socket.io-client": "^3.0.3",

@@ -14,17 +14,18 @@
       v-for="torrent in torrents"
       :key="torrent.name"
       :torrent="torrent"
+      @remove="removeTorrent"
     />
   </div>
   <Dialog header="Lägg till magnetlänk" v-model:visible="dialog">
     <div class="flex flex-col">
       <InputText v-model="magnetUri" placeholder="Magnetlänk" />
       <div class="flex m-5 justify-evenly">
-        <div>
+        <div class="flex items-center space-x-2">
           <label for="rmov">Film</label>
           <RadioButton id="rmov" name="Film" :value="true" v-model="isMovie" />
         </div>
-        <div>
+        <div class="flex items-center space-x-2">
           <label for="rser">Serie</label>
           <RadioButton
             id="rser"
@@ -52,11 +53,13 @@ import ProgressSpinner from "primevue/progressspinner";
 import client from "../api/client";
 import { useStore } from "vuex";
 import { ref } from "vue";
+import { useRouter } from "vue-router";
 
 export default {
   name: "Home",
   setup() {
     const store = useStore();
+    const router = useRouter();
     const torrents = ref([]);
     const isMovie = ref(true);
     const magnetUri = ref("");
@@ -69,23 +72,26 @@ export default {
     });
     const addNewTorrent = async () => {
       loading.value = true;
-      const token = localStorage.getItem("token");
       const payload = { magnetUri: magnetUri.value, isMoive: isMovie.value };
-      const res = await client.post("/torrent", payload, {
-        authorization: token,
-      });
+      const res = await client.post("/torrent", payload);
       const data = await res.json();
-      console.log({ data });
       torrents.value.push(data);
       if (res.status !== 201) {
         alert("Something went wrong. Try again!");
       } else {
         dialog.value = false;
+        magnetUri.value = "";
       }
       loading.value = false;
     };
     const toggleDialog = () => (dialog.value = !dialog.value);
-    const logout = () => {};
+    const logout = async () => {
+      await localStorage.removeItem("token");
+      router.push("/login");
+    };
+    const removeTorrent = (infoHash) => {
+      torrents.value = torrents.value.filter((t) => t.infoHash !== infoHash);
+    };
     return {
       addNewTorrent,
       logout,
@@ -95,6 +101,7 @@ export default {
       magnetUri,
       toggleDialog,
       loading,
+      removeTorrent,
     };
   },
   components: {

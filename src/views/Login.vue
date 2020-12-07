@@ -34,15 +34,13 @@ export default {
     const username = ref("");
     const login = async () => {
       const payload = { password: password.value, username: username.value };
-      console.log(payload);
       const res = await client.post("/login", payload);
       if (res.status === 200) {
         const parsed = await res.json();
-        console.log(parsed);
         await localStorage.setItem("token", parsed.token);
         router.replace("/");
       } else {
-        console.log(res.status);
+        alert("Login failed. Try again");
       }
     };
     return { login, password, username };

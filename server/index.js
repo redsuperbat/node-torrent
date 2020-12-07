@@ -15,6 +15,7 @@ const bodyParser = require("body-parser");
 const fs = require("fs");
 const { fromEventPattern } = require("rxjs");
 const { throttleTime } = require("rxjs/operators");
+const rimraf = require("rimraf");
 // Credentials
 const pwd = process.env.PASSWORD || "dev";
 const usr = process.env.USER_NAME || "dev";
@@ -60,17 +61,17 @@ app.post("/torrent", auth, (req, res, next) => {
   const dir = isMovie ? movieDir : seriesDir;
 
   torrent.on("metadata", async () => {
-    await new Promise((res) => fs.mkdir(`${dir}/${torrent.name}`, res));
+    const userDir = `${dir}/${torrent.name}`;
+    torrent.userDir = userDir;
+    await new Promise((res) => fs.mkdir(userDir, res));
+    torrent.files.forEach((f) => {
+      const fullDir = `${dir}/${torrent.name}/${f.name}`;
+      console.log(fullDir);
+      const writeStream = fs.createWriteStream(fullDir);
+      const fileStream = f.createReadStream();
+      fileStream.pipe(writeStream);
+    });
     res.status(201).json({ name: torrent.name, infoHash: torrent.infoHash });
-  });
-
-  torrent.files.forEach((f) => {
-    console.log(dir);
-    const fullDir = `${dir}/${torrent.name}/${f.name}`;
-    console.log(fullDir);
-    const writeStream = fs.createWriteStream(fullDir);
-    const fileStream = f.createReadStream();
-    fileStream.pipe(writeStream);
   });
 
   const downloadHandler = (handler) => {
@@ -79,39 +80,56 @@ app.post("/torrent", auth, (req, res, next) => {
   const downloadSub = fromEventPattern(downloadHandler)
     .pipe(throttleTime(1000))
     .subscribe(() => {
-      console.log(torrent.name, torrent.progress, "%");
+      console.log(torrent.uploadSpeed, torrent.downloadSpeed);
       io.emit(torrent.infoHash, {
         progress: torrent.progress,
         uploadSpeed: torrent.uploadSpeed,
         downloadSpeed: torrent.downloadSpeed,
         uploaded: torrent.uploaded,
+        downloaded: torrent.downloaded,
         size: torrent.length,
         timeRemaining: torrent.timeRemaining,
+        peers: torrent.numPeers,
       });
     });
 
   torrent.on("done", () => {
     console.log("Torrent", torrent.infoHash, "done!");
-    io.emit(`${torrent.infoHash}-done`);
+    io.emit(`${torrent.infoHash}-done`, { progress: torrent.progress });
     downloadSub.unsubscribe();
   });
 });
 
-app.post("/pause/:infoHash", (req, res) => {
+app.patch("/pause/:infoHash", auth, (req, res) => {
   const { infoHash } = req.params;
   const torrent = client.torrents.find((t) => t.infoHash === infoHash);
   torrent.pause();
   return res.send();
 });
-app.post("/resume/:infoHash", (req, res) => {
+app.patch("/resume/:infoHash", auth, (req, res) => {
   const { infoHash } = req.params;
   const torrent = client.torrents.find((t) => t.infoHash === infoHash);
   torrent.resume();
   return res.send();
 });
-app.post("/remove/:infoHash", (req, res) => {
+app.delete("/remove/:infoHash", auth, (req, res) => {
   const { infoHash } = req.params;
+  const { removeData } = req.body;
   const torrent = client.torrents.find((t) => t.infoHash === infoHash);
+  rimraf(torrent.path, () => {
+    console.log("Removed torrent cache");
+  });
+  console.log(
+    "Torrent path is:",
+    torrent.path,
+    "Torrent userdir is:",
+    torrent.userDir
+  );
+  if (removeData) {
+    rimraf(torrent.userDir, () => {
+      console.log("Removed files @", torrent.userDir);
+    });
+  }
   client.remove(torrent);
   return res.send();
 });
