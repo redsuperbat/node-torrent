@@ -107,7 +107,6 @@ export default {
     });
     store.dispatch("INIT_SOCKET");
     store.getters.io.on("init_torrents", (torrs) => {
-      console.log(torrs);
       torrents.value = torrs;
     });
     const addNewTorrent = async () => {
@@ -115,8 +114,8 @@ export default {
       const payload = {
         magnetUri: magnetUri.value,
         isMovie: isMovie.value,
-        customDirPath: custom.dir.path,
-        customName: custom.name,
+        customDirPath: custom.enabled ? custom.dir.path : "",
+        customName: custom.enabled ? custom.name : "",
       };
       const res = await client.post("/torrent", payload);
       const data = await res.json();

@@ -6,11 +6,10 @@ module.exports = (req, res, next) => {
   try {
     const tokenId = req.headers.authorization;
     const token = state.tokens.find((t) => t.token === tokenId);
-    console.log(token);
     if (!tokenId || !token || isAfter(new Date(), token.date)) {
       throw new Error();
     } else {
-      // If token is still valid add 30 secs to timer
+      // If token is still valid add 1 week to timer
       token.date = add(new Date(), { weeks: 1 });
       next();
     }

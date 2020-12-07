@@ -1,16 +1,35 @@
-# WARNING EXAMPLE FILE
+# EXAMPLE FILE
+version: "2.1"
 
-# version: "3.0"
+services:
+  node-torrent:
+    image: maxrsb/node-torrent
+    container_name: node-torrent
+    ports:
+      - 3333:3333
+      - 51413:51413
+      - 51413:51413/udp
+    environment:
+      - PASSWORD=password #optional (default is admin)
+      - USER_NAME=username #optional (default is pwd123)
+      - DOWNLOAD_DIR=/downloads
+    restart: unless-stopped
+    volumes:
+      # /downloads dir can be set to different dirname in the DOWNLOAD_DIR env variable
+      - /path/to/tvseries:/downloads/series
+      - /path/to/movies:/downloads/movies
 
-# services:
-#   node-torrent:
-#     ports:
-#       - 3333:3333
-#       - 51413:51413
-#       - 51413:51413/udp
-#     build: .
-#     environment:
-#       - PASSWORD=password
-#       - USER_NAME=max
-#       - MOVIE_DIR=/movies
-#       - SERIES_DIR=/series
+  plex:
+    image: linuxserver/plex
+    container_name: plex
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - VERSION=docker
+      - UMASK_SET=022 #optional
+      - PLEX_CLAIM= #optional
+    volumes:
+      - /path/to/library:/config
+      - /path/to/tvseries:/tv
+      - /path/to/movies:/movies
+    restart: unless-stopped

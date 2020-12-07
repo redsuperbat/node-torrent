@@ -97,7 +97,6 @@ export default {
 
     store.getters.io.on(`${props.torrent.infoHash}-done`, (t) => {
       parsedTorrent.value = parseTorrent(t);
-      console.log("Done event recieved, pausing torrent now!");
       pause();
     });
 

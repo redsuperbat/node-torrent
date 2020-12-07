@@ -43,7 +43,6 @@ export default {
           type: struct.type,
           path: struct.path,
         };
-        console.log("returning file", struct);
         return file;
       }
       return {
@@ -62,7 +61,6 @@ export default {
       .then((j) => {
         const nodes = formatStruct(j.children);
         treeStruct.value = nodes;
-        console.log(nodes);
       });
 
     const nodeSelect = (node) => {
