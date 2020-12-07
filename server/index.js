@@ -16,12 +16,18 @@ const fs = require("fs");
 const { fromEventPattern } = require("rxjs");
 const { throttleTime } = require("rxjs/operators");
 const rimraf = require("rimraf");
-// Credentials
-const pwd = process.env.PASSWORD || "dev";
-const usr = process.env.USER_NAME || "dev";
-const movieDir = process.env.MOVIE_DIR || "./downloads";
-const seriesDir = process.env.SERIES_DIR || "./downloads";
+const directoryTree = require("directory-tree");
 
+// Credentials
+const pwd = process.env.PASSWORD || "pwd123";
+const usr = process.env.USER_NAME || "admin";
+const downloadDir = process.env.DOWNLOAD_DIR || "./node_torrent";
+const movieDir = `${downloadDir}/movies`;
+const seriesDir = `${downloadDir}/series`;
+
+if (!fs.existsSync(downloadDir)) {
+  fs.mkdirSync(downloadDir);
+}
 if (!fs.existsSync(movieDir)) {
   fs.mkdirSync(movieDir);
 }
@@ -54,7 +60,6 @@ app.post("/login", (req, res) => {
 
   if (password === pwd && username === usr) {
     const token = v4();
-    // set to month when in production
     state.add({ token, date: add(new Date(), { weeks: 1 }) });
     return res.json({ msg: "Logged in!", token });
   }
@@ -63,16 +68,25 @@ app.post("/login", (req, res) => {
 });
 
 app.post("/torrent", auth, (req, res, next) => {
-  const { magnetUri, isMovie } = req.body;
+  const { magnetUri, isMovie, customDirPath, customName } = req.body;
   const torrent = client.add(magnetUri);
-  const dir = isMovie ? movieDir : seriesDir;
 
+  console.log(req.body);
+  // Checks if user selected a custom directory to save torrent
+  // If not defaults to selected predetermied directory
+  const dir = customDirPath ?? (isMovie ? movieDir : seriesDir);
   torrent.on("metadata", async () => {
-    const userDir = `${dir}/${torrent.name}`;
+    // Checks if user specified a custom name.
+    // Defaults to the torrent name if none was specified
+    const userDir = `${dir}/${customName ?? torrent.name}`;
+    // Save a copy of the userDirectory on the torrent object
+    // This is to enable deletion of the files later
     torrent.userDir = userDir;
+    // Wrap in promise to await
     await new Promise((res) => fs.mkdir(userDir, res));
+
     torrent.files.forEach((f) => {
-      const fullDir = `${dir}/${torrent.name}/${f.name}`;
+      const fullDir = `${dir}/${customName ?? torrent.name}/${f.name}`;
       console.log(fullDir);
       const writeStream = fs.createWriteStream(fullDir);
       const fileStream = f.createReadStream();
@@ -84,27 +98,37 @@ app.post("/torrent", auth, (req, res, next) => {
   const downloadHandler = (handler) => {
     torrent.on("download", handler);
   };
+  // Throttle the events to not overload the sockets
+  // Maximum of one event per second
+  // Currently using rxjs TODO: implement natively
   const downloadSub = fromEventPattern(downloadHandler)
     .pipe(throttleTime(1000))
     .subscribe(() => {
       console.log(torrent.uploadSpeed, torrent.downloadSpeed);
-      io.emit(torrent.infoHash, {
-        progress: torrent.progress,
-        uploadSpeed: torrent.uploadSpeed,
-        downloadSpeed: torrent.downloadSpeed,
-        uploaded: torrent.uploaded,
-        downloaded: torrent.downloaded,
-        size: torrent.length,
-        timeRemaining: torrent.timeRemaining,
-        peers: torrent.numPeers,
-      });
+      io.emit(torrent.infoHash, extractTorrentInfo(torrent));
     });
 
   torrent.on("done", () => {
     console.log("Torrent", torrent.infoHash, "done!");
-    io.emit(`${torrent.infoHash}-done`, { progress: torrent.progress });
+    io.emit(`${torrent.infoHash}-done`, extractTorrentInfo(torrent));
     downloadSub.unsubscribe();
   });
+
+  const extractTorrentInfo = (torrent) => ({
+    progress: torrent.progress,
+    uploadSpeed: torrent.uploadSpeed,
+    downloadSpeed: torrent.downloadSpeed,
+    uploaded: torrent.uploaded,
+    downloaded: torrent.downloaded,
+    size: torrent.length,
+    timeRemaining: torrent.timeRemaining,
+    peers: torrent.numPeers,
+  });
+});
+
+app.get("/fileTree", auth, async (req, res) => {
+  const tree = directoryTree(downloadDir);
+  res.json(tree);
 });
 
 app.patch("/pause/:infoHash", auth, (req, res) => {

@@ -80,25 +80,23 @@ export default {
       timeRemaining: 0,
     });
 
+    const parseTorrent = (torrent) => ({
+      progress: Math.round(torrent.progress * 1000) / 10,
+      uploadSpeed: formatBytes(torrent.uploadSpeed),
+      downloadSpeed: formatBytes(torrent.downloadSpeed),
+      uploaded: formatBytes(torrent.uploaded),
+      downloaded: formatBytes(torrent.downloaded),
+      size: formatBytes(torrent.size),
+      peers: torrent.peers,
+      timeRemaining: torrent.timeRemaining,
+    });
+
     store.getters.io.on(props.torrent.infoHash, (t) => {
-      const parsed = {
-        progress: Math.round(t.progress * 1000) / 10,
-        uploadSpeed: formatBytes(t.uploadSpeed),
-        downloadSpeed: formatBytes(t.downloadSpeed),
-        uploaded: formatBytes(t.uploaded),
-        downloaded: formatBytes(t.downloaded),
-        size: formatBytes(t.size),
-        peers: t.peers,
-        timeRemaining: t.timeRemaining,
-      };
-      parsedTorrent.value = parsed;
+      parsedTorrent.value = parseTorrent(t);
     });
 
     store.getters.io.on(`${props.torrent.infoHash}-done`, (t) => {
-      const progress = Math.round(t.progress * 1000) / 10;
-      const parsed = parsedTorrent.value;
-      parsed.progress = progress;
-      parsedTorrent.value = parsed;
+      parsedTorrent.value = parseTorrent(t);
       console.log("Done event recieved, pausing torrent now!");
       pause();
     });
@@ -140,6 +138,7 @@ export default {
       toggleDialog,
     };
   },
+  emits: ["remove"],
   components: {
     Dialog,
     Button,
