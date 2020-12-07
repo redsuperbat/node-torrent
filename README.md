@@ -23,9 +23,9 @@ The docker image is available on dockerhub as maxrsb/node-torrent. Link to docke
 ## Screenshots
 
 <p align="center">
-  <img src="gallery/login.png" width="350" >
-  <img src="gallery/home.png" width="350" >
-  <img src="gallery/add.png" width="350" >
-  <img src="gallery/add2.png" width="350" >
-  <img src="gallery/torrents.png" width="350" >
+<kbd><img src="gallery/login.png" width="350" /> </kbd>
+<kbd><img src="gallery/home.png" width="350" /> </kbd>
+<kbd><img src="gallery/add.png" width="350" /> </kbd>
+<kbd><img src="gallery/add2.png" width="350" /> </kbd>
+<kbd><img src="gallery/torrents.png" width="350" /> </kbd>
 </p>
