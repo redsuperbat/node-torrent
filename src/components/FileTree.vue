@@ -45,6 +45,8 @@ export default {
         };
         return file;
       }
+      // This is the folder case
+      // Folders have children that can also be folders
       return {
         label: struct.name,
         key: v4(),
