@@ -2,7 +2,7 @@
   <div>
     <Tree :value="treeStruct" selectionMode="single" @node-select="nodeSelect">
       <template #default="slotProps">
-        <div class="truncate w-48">
+        <div class="truncate w-48 sm:w-80">
           <b>{{ slotProps.node.label }}</b>
         </div>
       </template>
