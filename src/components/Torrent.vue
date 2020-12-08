@@ -30,6 +30,7 @@
       </div>
     </div>
     <div class="flex justify-end space-x-4 ">
+      <small>Save path: {{ parsedTorrent.savePath }}</small>
       <small>Download {{ parsedTorrent.downloadSpeed }}/s</small>
       <small>Upload {{ parsedTorrent.uploadSpeed }}/s</small>
       <small>Total uploaded {{ parsedTorrent.uploaded }}</small>
@@ -78,6 +79,7 @@ export default {
       peers: 0,
       size: "",
       timeRemaining: 0,
+      savePath: "",
     });
 
     const parseTorrent = (torrent) => ({
@@ -89,6 +91,7 @@ export default {
       size: formatBytes(torrent.size),
       peers: torrent.peers,
       timeRemaining: torrent.timeRemaining,
+      savePath: torrent.savePath,
     });
 
     store.getters.io.on(props.torrent.infoHash, (t) => {

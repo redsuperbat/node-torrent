@@ -2,20 +2,20 @@
   <div class="grid place-items-center h-screen">
     <form @submit.prevent="login">
       <div class="mb-3 flex flex-col">
-        <label for="usr" class="form-label">Användarnamn</label>
-        <InputText id="usr" placeholder="Användarnamn" v-model="username" />
+        <label for="usr" class="form-label">Username</label>
+        <InputText id="usr" placeholder="Username" v-model="username" />
       </div>
       <div class="mb-3 flex flex-col">
-        <label for="pwd" class="form-label">Lösenord</label>
+        <label for="pwd" class="form-label">Password</label>
         <InputText
           type="password"
           id="pwd"
-          placeholder="Lösenord"
+          placeholder="Password"
           v-model="password"
         />
       </div>
       <div class="flex justify-end">
-        <Button type="submit">Logga in</Button>
+        <Button type="submit">Login</Button>
       </div>
     </form>
   </div>

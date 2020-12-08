@@ -108,7 +108,6 @@ app.post("/torrent", auth, (req, res, next) => {
   const downloadSub = fromEventPattern(downloadHandler)
     .pipe(throttleTime(1000))
     .subscribe(() => {
-      console.log(torrent.uploadSpeed, torrent.downloadSpeed);
       io.emit(torrent.infoHash, extractTorrentInfo(torrent));
     });
 
@@ -127,6 +126,7 @@ app.post("/torrent", auth, (req, res, next) => {
     size: torrent.length,
     timeRemaining: torrent.timeRemaining,
     peers: torrent.numPeers,
+    savePath: torrent.userDir,
   });
 });
 
@@ -160,12 +160,11 @@ app.delete("/remove/:infoHash", auth, (req, res) => {
     "Torrent userdir is:",
     torrent.userDir
   );
-  if (removeData) {
-    if (torrent.userDir !== "/") {
-      rimraf(torrent.userDir, () => {
-        console.log("Removed files @", torrent.userDir);
-      });
-    }
+  // Prevents user from deleting all content
+  if (removeData && torrent.userDir !== "/") {
+    rimraf(torrent.userDir, () => {
+      console.log("Removed files @", torrent.userDir);
+    });
   }
   client.remove(torrent);
   return res.send();
@@ -177,6 +176,5 @@ app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "../dist", "/index.html"));
 });
 
-console.log(process.env.NODE_ENV);
 const port = process.env.NODE_ENV === "dev" ? 3030 : 3333;
 server.listen(port, () => console.log(`Listening on http://localhost:${port}`));

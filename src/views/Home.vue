@@ -1,11 +1,11 @@
 <template>
   <Toolbar>
     <template #left>
-      <Button label="Ny" icon="pi pi-plus" @click="toggleDialog" />
+      <Button label="Add torrent" icon="pi pi-plus" @click="toggleDialog" />
     </template>
 
     <template #right>
-      <Button label="Logga ut" @click="logout" />
+      <Button label="Logout" @click="logout" />
     </template>
   </Toolbar>
 
@@ -17,12 +17,12 @@
       @remove="removeTorrent"
     />
   </div>
-  <Dialog header="Lägg till magnetlänk" v-model:visible="dialog">
+  <Dialog header="Add magnet uri" v-model:visible="dialog">
     <div class="flex flex-col">
-      <InputText v-model="magnetUri" placeholder="Magnetlänk" />
+      <InputText v-model="magnetUri" placeholder="Magnet uri" />
       <div class="flex my-2 space-x-2">
         <div class="flex items-center space-x-2">
-          <label for="rmov">Film</label>
+          <label for="rmov">Movie</label>
           <RadioButton
             id="rmov"
             :disabled="custom.enabled"
@@ -32,7 +32,7 @@
           />
         </div>
         <div class="flex items-center space-x-2">
-          <label for="rser">Serie</label>
+          <label for="rser">Series</label>
           <RadioButton
             id="rser"
             :value="false"
@@ -42,7 +42,7 @@
           />
         </div>
         <div class="flex items-center space-x-2">
-          <label for="custom">Anpassad</label>
+          <label for="custom">Custom</label>
           <CheckBox id="custom" :binary="true" v-model="custom.enabled" />
         </div>
       </div>
@@ -51,7 +51,7 @@
         <FileTree v-model="custom.dir" />
         <div class="flex flex-col">
           <label for="customName" class="font-sm"
-            >Anpassat Namn (lämna tomt för default-namn)</label
+            >Custom foldername (leave empty for default)</label
           >
           <InputText
             id="customName"
@@ -59,14 +59,14 @@
             v-model="custom.name"
           />
           <small id="username2-help" class="font-xs"
-            >Bra i fall du laddar ner serier säsongsvis</small
+            >Nice if you're downloading seasonally</small
           >
         </div>
       </div>
 
       <ProgressSpinner v-if="loading" style="width:25px;height:25px" />
       <Button
-        label="Lägg till"
+        label="Add torrent"
         @click="addNewTorrent"
         v-else
         :disabled="!magnetUri"
