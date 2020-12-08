@@ -1,22 +1,26 @@
-const express = require("express");
+import express from "express";
+import cors from "cors";
+import http from "http";
+import socketio from "socket.io";
+import { v4 } from "uuid";
+import { add } from "date-fns";
+import path from "path";
+import Webtorrent from "webtorrent";
+import auth from "./middleware/auth.js";
+import state from "./tokens.js";
+import bodyParser from "body-parser";
+import fs from "fs";
+import { fromEventPattern } from "rxjs";
+import { throttleTime } from "rxjs/operators";
+import rimraf from "rimraf";
+import directoryTree from "directory-tree";
+
+// Constants
 const app = express();
-const cors = require("cors");
 app.use(cors());
-const server = require("http").createServer(app);
-const io = require("socket.io")(server);
-const { v4 } = require("uuid");
-const add = require("date-fns/add");
-const path = require("path");
-const Webtorrent = require("webtorrent");
-const auth = require("./middleware/auth");
+const server = http.createServer(app);
+const io = socketio(server);
 const client = new Webtorrent();
-const state = require("./tokens");
-const bodyParser = require("body-parser");
-const fs = require("fs");
-const { fromEventPattern } = require("rxjs");
-const { throttleTime } = require("rxjs/operators");
-const rimraf = require("rimraf");
-const directoryTree = require("directory-tree");
 
 // Credentials
 const pwd = process.env.PASSWORD || "pwd123";
@@ -173,5 +177,6 @@ app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "../dist", "/index.html"));
 });
 
-const port = process.env.PORT || 3333;
+console.log(process.env.NODE_ENV);
+const port = process.env.NODE_ENV ? 3333 : 3030;
 server.listen(port, () => console.log(`Listening on http://localhost:${port}`));

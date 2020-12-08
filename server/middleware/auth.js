@@ -1,8 +1,7 @@
-const state = require("../tokens");
-const isAfter = require("date-fns/isAfter");
-const add = require("date-fns/add");
+import state from "../tokens.js";
+import { isAfter, add } from "date-fns";
 
-module.exports = (req, res, next) => {
+const auth = (req, res, next) => {
   try {
     const tokenId = req.headers.authorization;
     const token = state.tokens.find((t) => t.token === tokenId);
@@ -17,3 +16,5 @@ module.exports = (req, res, next) => {
     res.status(401).send();
   }
 };
+
+export default auth;

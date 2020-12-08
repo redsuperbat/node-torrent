@@ -1,14 +1,26 @@
 {
   "name": "node-torrent",
-  "version": "",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
-    "watch": "vue-cli-service build --watch",
-    "serve": "vue-cli-service serve",
-    "start": "node ./server/index.js",
-    "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint",
-    "start:dev": "concurrently --kill-others \"npm run watch\" \"nodemon ./server/index.js\""
+    "transpile": "babel ./server --out-dir dist-server",
+    "vue:dev": "vue-cli-service build --watch",
+    "clean": "rimraf dist-server",
+    "start": "node ./dist-server/index.js",
+    "dev": "npm run vue:dev & npm run watch:dev",
+    "build:server": "npm run clean && npm run transpile",
+    "watch:dev": "nodemon"
+  },
+  "nodemonConfig": {
+    "exec": "npm run build:server && npm run start",
+    "watch": [
+      "server/*"
+    ],
+    "ignore": [
+      "**/__tests__/**",
+      "*.test.js",
+      "*.spec.js"
+    ]
   },
   "dependencies": {
     "body-parser": "^1.19.0",
@@ -30,6 +42,10 @@
     "webtorrent": "^0.112.0"
   },
   "devDependencies": {
+    "@babel/cli": "^7.12.8",
+    "@babel/core": "^7.12.9",
+    "@babel/plugin-transform-runtime": "^7.12.1",
+    "@babel/preset-env": "^7.12.7",
     "@vue/cli-plugin-babel": "~4.5.0",
     "@vue/cli-plugin-eslint": "~4.5.0",
     "@vue/cli-plugin-router": "~4.5.0",
@@ -38,7 +54,6 @@
     "@vue/compiler-sfc": "^3.0.0",
     "autoprefixer": "^9.8.6",
     "babel-eslint": "^10.1.0",
-    "concurrently": "^5.3.0",
     "eslint": "^6.7.2",
     "eslint-plugin-vue": "^7.0.0-0",
     "nodemon": "^2.0.6",
