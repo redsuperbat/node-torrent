@@ -178,5 +178,5 @@ app.get("*", (req, res) => {
 });
 
 console.log(process.env.NODE_ENV);
-const port = process.env.NODE_ENV ? 3333 : 3030;
+const port = process.env.NODE_ENV === "dev" ? 3030 : 3333;
 server.listen(port, () => console.log(`Listening on http://localhost:${port}`));

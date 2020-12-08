@@ -7,15 +7,19 @@
     "vue:dev": "vue-cli-service build --watch",
     "clean": "rimraf dist-server",
     "start": "node ./dist-server/index.js",
+    "kill": "kill $(lsof -t -i:3030) | exit 0",
     "dev": "npm run vue:dev & npm run watch:dev",
     "build:server": "npm run clean && npm run transpile",
     "watch:dev": "nodemon"
   },
   "nodemonConfig": {
-    "exec": "npm run build:server && npm run start",
+    "exec": "npm run kill && npm run build:server && npm run start",
     "watch": [
       "server/*"
     ],
+    "env": {
+      "NODE_ENV": "dev"
+    },
     "ignore": [
       "**/__tests__/**",
       "*.test.js",
