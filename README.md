@@ -20,6 +20,24 @@ This project is ment to run alongside plex in a docker container. Preferrably us
 
 The docker image is available on dockerhub as maxrsb/node-torrent. Link to dockerhub is [here](https://hub.docker.com/repository/docker/maxrsb/node-torrent).
 
+### Running it without docker
+Running the project without docker is also fine. This will require Node to be installed on your system. 
+
+#### Setup
+- Clone the repo
+- Navigate into the root dir
+- run `npm i` to install dependecies
+- run `npm run build` to build the project
+- run `npm run start` to start NodeTorrent
+
+#### Specifying download directories
+To specify which directories that NodeTorrent will download into you have to set specific env variables when running the project.
+Specifying `/downloads` as your download directory:
+Linux:
+`DOWNLOAD_DIR=/downloads npm run start`
+Windows: 
+`DOWNLOAD_DIR=/downloads && npm run start`
+
 ## Screenshots
 
 <p align="center">
