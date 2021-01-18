@@ -1,12 +1,5 @@
 const defaultHeaders = {
-  // "sec-fetch-dest": "empty",
-  // "sec-fetch-mode": "cors",
-  // "sec-fetch-site": "cross-site",
   "content-type": "application/json",
-
-  // ":authority": "yts.mx",
-  // ":method": "GET",
-  // ":scheme": "https",
 };
 
 class ApiClient {
