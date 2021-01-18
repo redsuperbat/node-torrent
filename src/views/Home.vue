@@ -149,7 +149,9 @@ export default {
 
     const torrentSearchString = ref("");
     async function searchTorrents() {
-      const { data } = await ytsClient.get("/list_movies.json");
+      const { data } = await ytsClient.get("/list_movies.json", {
+        params: { sort_by: "seeds", order_by: "asc", limit: 10 },
+      });
       console.log(data);
     }
     searchTorrents();

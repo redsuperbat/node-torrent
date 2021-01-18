@@ -8,20 +8,36 @@ class ApiClient {
     this.cors = cors;
   }
 
-  async post(url, payload, headers) {
-    const response = await this._fetchMethod(url, "POST", payload, headers);
+  async post(url, { params, headers, body } = {}) {
+    const response = await this._fetchMethod(url, "POST", {
+      params,
+      headers,
+      body,
+    });
     return this._parseJson(response);
   }
-  async get(url, payload, headers) {
-    const response = await this._fetchMethod(url, "GET", payload, headers);
+  async get(url, { params, headers, body } = {}) {
+    const response = await this._fetchMethod(url, "GET", {
+      params,
+      headers,
+      body,
+    });
     return this._parseJson(response);
   }
-  async patch(url, payload, headers) {
-    const response = await this._fetchMethod(url, "PATCH", payload, headers);
+  async patch(url, { params, headers, body } = {}) {
+    const response = await this._fetchMethod(url, "PATCH", {
+      params,
+      headers,
+      body,
+    });
     return this._parseJson(response);
   }
-  async delete(url, payload, headers) {
-    const response = await this._fetchMethod(url, "DELETE", payload, headers);
+  async delete(url, { params, headers, body } = {}) {
+    const response = await this._fetchMethod(url, "DELETE", {
+      params,
+      headers,
+      body,
+    });
     return this._parseJson(response);
   }
 
@@ -35,9 +51,15 @@ class ApiClient {
     return { data, headers, statusText, status };
   }
 
-  _fetchMethod(url, method, payload, headers) {
+  _fetchMethod(url, method, { body, headers, params }) {
     const token = localStorage.getItem("token");
-    const requestUrl = `${this.baseUrl || ""}${url}`;
+    if (params) {
+      params = Object.entries(params)
+        .map((p) => `${p[0]}=${p[1]}`)
+        .join("&");
+    }
+    const requestUrl = `${this.baseUrl || ""}${url}?${params || ""}`;
+    console.log(requestUrl);
 
     let finalHeaders = {};
     if (!this.cors) {
@@ -51,7 +73,7 @@ class ApiClient {
     return fetch(requestUrl, {
       method: method,
       headers: finalHeaders,
-      body: JSON.stringify(payload),
+      body: JSON.stringify(body),
       mode: this.cors && "cors",
     });
   }

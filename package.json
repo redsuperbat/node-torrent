@@ -13,7 +13,8 @@
     "dev": "npm run vue:dev & npm run watch:dev",
     "build:server": "npm run clean && npm run transpile",
     "server:dev": "nodemon",
-    "serve": "vue-cli-service serve"
+    "serve": "vue-cli-service serve",
+    "crawl": "NODE_ENV=dev&& npm run transpile && node ./dist-server/torrent-crawling/piratebay.js"
   },
   "nodemonConfig": {
     "exec": "npm run kill && npm run build:server && npm run start",
@@ -32,11 +33,13 @@
   "dependencies": {
     "axios": "^0.21.1",
     "body-parser": "^1.19.0",
+    "cheerio": "^1.0.0-rc.5",
     "cors": "^2.8.5",
     "date-fns": "^2.16.1",
     "directory-tree": "^2.2.5",
     "exit-hook": "^2.2.0",
     "express": "^4.17.1",
+    "playwright": "^1.7.1",
     "primeicons": "^4.1.0",
     "primevue": "^3.0.2",
     "rimraf": "^2.7.1",
