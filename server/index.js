@@ -14,6 +14,7 @@ import { fromEventPattern } from "rxjs";
 import { throttleTime } from "rxjs/operators";
 import rimraf from "rimraf";
 import directoryTree from "directory-tree";
+import { crawlPiratebay } from "./torrent-crawling/piratebay.js";
 
 // Constants
 const app = express();
@@ -171,6 +172,15 @@ app.delete("/remove/:infoHash", authGuard, (req, res) => {
 });
 
 app.get("/ping", authGuard);
+
+app.get("/search-torrents", authGuard, async (req, res) => {
+  try {
+    const piratebayTorrents = await crawlPiratebay();
+    res.json(piratebayTorrents);
+  } catch (e) {
+    res.status(500).send();
+  }
+});
 
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "../dist", "/index.html"));
