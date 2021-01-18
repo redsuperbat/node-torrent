@@ -1,6 +1,18 @@
+const defaultHeaders = {
+  // "sec-fetch-dest": "empty",
+  // "sec-fetch-mode": "cors",
+  // "sec-fetch-site": "cross-site",
+  "content-type": "application/json",
+
+  // ":authority": "yts.mx",
+  // ":method": "GET",
+  // ":scheme": "https",
+};
+
 class ApiClient {
-  constructor({ baseUrl } = {}) {
+  constructor({ baseUrl, cors } = {}) {
     this.baseUrl = baseUrl;
+    this.cors = cors;
   }
 
   async post(url, payload, headers) {
@@ -32,14 +44,22 @@ class ApiClient {
 
   _fetchMethod(url, method, payload, headers) {
     const token = localStorage.getItem("token");
-    return fetch(this.baseUrl || "" + url, {
-      method: method,
-      headers: {
-        "content-type": "application/json",
+    const requestUrl = `${this.baseUrl || ""}${url}`;
+
+    let finalHeaders = {};
+    if (!this.cors) {
+      finalHeaders = {
         authorization: token || "",
+        ...defaultHeaders,
         ...headers,
-      },
+      };
+    }
+
+    return fetch(requestUrl, {
+      method: method,
+      headers: finalHeaders,
       body: JSON.stringify(payload),
+      mode: this.cors && "cors",
     });
   }
 }

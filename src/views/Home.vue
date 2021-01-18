@@ -92,7 +92,7 @@ import ProgressSpinner from "primevue/progressspinner";
 import homeClient from "../api/home-client";
 import ytsClient from "../api/yts-client";
 import { useStore } from "vuex";
-import { defineAsyncComponent, reactive, ref, watch } from "vue";
+import { defineAsyncComponent, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 
 export default {
