@@ -1,8 +1,10 @@
 import { createCrawler } from "./crawler";
+import { TorrentDataModel } from "./torrent-data-model";
 
 export async function crawlPiratebay({ query } = {}) {
   const queryString = query?.replaceAll(" ", "+");
   const url = `https://thepiratebay.org/search.php?q=${queryString}`;
+  console.log("Querying TPB", url);
   const page = await createCrawler();
   await page.goto(url);
   const torrents = await page.$$("li.list-entry");

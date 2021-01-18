@@ -90,10 +90,13 @@ import CheckBox from "primevue/checkbox";
 import ProgressSpinner from "primevue/progressspinner";
 
 import homeClient from "../api/home-client";
-import ytsClient from "../api/yts-client";
+import useRefToObservable from "../hooks/useRefToObservable";
+import useObservable from "../hooks/useObservable";
+import { debounceTime, distinctUntilChanged, filter } from "rxjs/operators";
 import { useStore } from "vuex";
 import { defineAsyncComponent, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
+import client from "../api/home-client";
 
 export default {
   name: "Home",
@@ -148,13 +151,22 @@ export default {
     };
 
     const torrentSearchString = ref("");
-    async function searchTorrents() {
-      const { data } = await ytsClient.get("/list_movies.json", {
-        params: { sort_by: "seeds", order_by: "asc", limit: 10 },
-      });
-      console.log(data);
-    }
-    searchTorrents();
+    const searchString$ = useRefToObservable(torrentSearchString);
+    const searchLoading = ref(false);
+    useObservable(
+      searchString$.pipe(
+        debounceTime(1000),
+        distinctUntilChanged(),
+        filter((v) => v !== "")
+      ),
+      async (value) => {
+        const res = await client.get("/search-torrents", {
+          params: { query: value },
+        });
+        console.log(res.data);
+      }
+    );
+
     return {
       addNewTorrent,
       torrentSearchString,

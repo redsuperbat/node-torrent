@@ -1,6 +1,6 @@
 export class TorrentDataModel {
-  constructor({ peers, seeds, magnetUri, image, uploaded, name, size }) {
-    this.peers = peers;
+  constructor({ leech, seeds, magnetUri, image, uploaded, name, size }) {
+    this.leech = leech;
     this.seeds = seeds;
     this.magnetUri = magnetUri;
     this.image = image;

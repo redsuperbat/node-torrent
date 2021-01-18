@@ -174,10 +174,13 @@ app.delete("/remove/:infoHash", authGuard, (req, res) => {
 app.get("/ping", authGuard);
 
 app.get("/search-torrents", authGuard, async (req, res) => {
+  console.log(req.query);
+  const { query } = req.query;
   try {
-    const piratebayTorrents = await crawlPiratebay();
+    const piratebayTorrents = await crawlPiratebay({ query });
     res.json(piratebayTorrents);
   } catch (e) {
+    console.log(e);
     res.status(500).send();
   }
 });

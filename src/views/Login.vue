@@ -24,7 +24,7 @@
 <script>
 import InputText from "primevue/inputtext";
 import Button from "primevue/button";
-import client from "@/api/home-client";
+import client from "../api/home-client";
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 export default {
@@ -34,7 +34,7 @@ export default {
     const username = ref("");
     const login = async () => {
       const payload = { password: password.value, username: username.value };
-      const res = await client.post("/login", payload);
+      const res = await client.post("/login", { body: payload });
       console.log(res);
       if (res.status === 200) {
         await localStorage.setItem("token", res.data.token);

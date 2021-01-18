@@ -58,7 +58,9 @@ class ApiClient {
         .map((p) => `${p[0]}=${p[1]}`)
         .join("&");
     }
-    const requestUrl = `${this.baseUrl || ""}${url}?${params || ""}`;
+    const requestUrl = `${this.baseUrl || ""}${url}${
+      params ? "?" + params : ""
+    }`;
     console.log(requestUrl);
 
     let finalHeaders = {};
