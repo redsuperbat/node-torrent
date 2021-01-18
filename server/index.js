@@ -6,7 +6,7 @@ import { v4 } from "uuid";
 import { add } from "date-fns";
 import path from "path";
 import Webtorrent from "webtorrent";
-import auth from "./middleware/auth.js";
+import authGuard from "./middleware/authGuard.js";
 import state from "./tokens.js";
 import bodyParser from "body-parser";
 import fs from "fs";
@@ -71,7 +71,7 @@ app.post("/login", (req, res) => {
   return res.status(400).send();
 });
 
-app.post("/torrent", auth, (req, res, next) => {
+app.post("/torrent", authGuard, (req, res, next) => {
   const { magnetUri, isMovie, customDirPath, customName } = req.body;
   const torrent = client.add(magnetUri);
 
@@ -130,24 +130,24 @@ app.post("/torrent", auth, (req, res, next) => {
   });
 });
 
-app.get("/fileTree", auth, async (req, res) => {
+app.get("/fileTree", authGuard, async (req, res) => {
   const tree = directoryTree(downloadDir);
   res.json(tree);
 });
 
-app.patch("/pause/:infoHash", auth, (req, res) => {
+app.patch("/pause/:infoHash", authGuard, (req, res) => {
   const { infoHash } = req.params;
   const torrent = client.torrents.find((t) => t.infoHash === infoHash);
   torrent.pause();
   return res.send();
 });
-app.patch("/resume/:infoHash", auth, (req, res) => {
+app.patch("/resume/:infoHash", authGuard, (req, res) => {
   const { infoHash } = req.params;
   const torrent = client.torrents.find((t) => t.infoHash === infoHash);
   torrent.resume();
   return res.send();
 });
-app.delete("/remove/:infoHash", auth, (req, res) => {
+app.delete("/remove/:infoHash", authGuard, (req, res) => {
   const { infoHash } = req.params;
   const { removeData } = req.body;
   const torrent = client.torrents.find((t) => t.infoHash === infoHash);
@@ -170,7 +170,7 @@ app.delete("/remove/:infoHash", auth, (req, res) => {
   return res.send();
 });
 
-app.get("/ping", auth);
+app.get("/ping", authGuard);
 
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "../dist", "/index.html"));

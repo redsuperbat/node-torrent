@@ -54,7 +54,7 @@ import Dialog from "primevue/dialog";
 import ProgressBar from "primevue/progressbar";
 import { ref } from "vue";
 import { useStore } from "vuex";
-import client from "../api/client";
+import client from "../api/home-client";
 export default {
   setup(props, { emit }) {
     const store = useStore();

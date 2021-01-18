@@ -1,7 +1,7 @@
-import state from "../tokens.js";
+import state, { writeTokenToMemory } from "../tokens.js";
 import { isAfter, add } from "date-fns";
 
-const auth = (req, res, next) => {
+const authGuard = (req, res, next) => {
   try {
     const tokenId = req.headers.authorization;
     const token = state.tokens.find((t) => t.token === tokenId);
@@ -10,6 +10,7 @@ const auth = (req, res, next) => {
     } else {
       // If token is still valid add 1 week to timer
       token.date = add(new Date(), { weeks: 1 });
+      writeTokenToMemory();
       next();
     }
   } catch (e) {
@@ -17,4 +18,4 @@ const auth = (req, res, next) => {
   }
 };
 
-export default auth;
+export default authGuard;

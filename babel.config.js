@@ -1,4 +1,4 @@
 module.exports = {
-  presets: ["@babel/preset-env"],
-  plugins: ["@babel/plugin-transform-runtime"],
+  presets: [["@babel/preset-env", { targets: { esmodules: true } }]],
+  // plugins: ["@babel/plugin-transform-runtime"],
 };

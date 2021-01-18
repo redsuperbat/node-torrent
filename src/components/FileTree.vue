@@ -12,7 +12,7 @@
 
 <script>
 import Tree from "primevue/tree";
-import client from "../api/client";
+import client from "../api/home-client";
 import { computed, ref } from "vue";
 import { v4 } from "uuid";
 
@@ -57,13 +57,10 @@ export default {
       };
     };
 
-    client
-      .get("/fileTree")
-      .then((res) => res.json())
-      .then((j) => {
-        const nodes = formatStruct(j.children);
-        treeStruct.value = nodes;
-      });
+    client.get("/fileTree").then(({ data }) => {
+      const nodes = formatStruct(data.children);
+      treeStruct.value = nodes;
+    });
 
     const nodeSelect = (node) => {
       selectedDir.value = node;

@@ -1,12 +1,12 @@
 <template>
-  <div class="grid place-items-center h-screen">
-    <form @submit.prevent="login">
+  <div class="grid place-items-center h-screen bg-gray-800">
+    <form @submit.prevent="login" class="">
       <div class="mb-3 flex flex-col">
-        <label for="usr" class="form-label">Username</label>
+        <label for="usr" class="form-label text-white">Username</label>
         <InputText id="usr" placeholder="Username" v-model="username" />
       </div>
       <div class="mb-3 flex flex-col">
-        <label for="pwd" class="form-label">Password</label>
+        <label for="pwd" class="form-label text-white">Password</label>
         <InputText
           type="password"
           id="pwd"
@@ -24,7 +24,7 @@
 <script>
 import InputText from "primevue/inputtext";
 import Button from "primevue/button";
-import client from "@/api/client";
+import client from "@/api/home-client";
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 export default {
@@ -35,9 +35,9 @@ export default {
     const login = async () => {
       const payload = { password: password.value, username: username.value };
       const res = await client.post("/login", payload);
+      console.log(res);
       if (res.status === 200) {
-        const parsed = await res.json();
-        await localStorage.setItem("token", parsed.token);
+        await localStorage.setItem("token", res.data.token);
         router.replace("/");
       } else {
         alert("Login failed. Try again");

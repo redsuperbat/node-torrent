@@ -1,7 +1,7 @@
 import { createStore } from "vuex";
 import { io } from "socket.io-client";
 
-export default createStore({
+const store = createStore({
   state: {
     io: null,
   },
@@ -15,3 +15,5 @@ export default createStore({
     io: (state) => state.io,
   },
 });
+
+export default store;

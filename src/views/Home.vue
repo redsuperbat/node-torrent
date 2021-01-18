@@ -2,6 +2,10 @@
   <Toolbar>
     <template #left>
       <Button label="Add torrent" icon="pi pi-plus" @click="toggleDialog" />
+      <InputText
+        placeholder="Search for torrents"
+        v-model="torrentSearchString"
+      />
     </template>
 
     <template #right>
@@ -85,9 +89,10 @@ import RadioButton from "primevue/radiobutton";
 import CheckBox from "primevue/checkbox";
 import ProgressSpinner from "primevue/progressspinner";
 
-import client from "../api/client";
+import homeClient from "../api/home-client";
+import ytsClient from "../api/yts-client";
 import { useStore } from "vuex";
-import { defineAsyncComponent, reactive, ref } from "vue";
+import { defineAsyncComponent, reactive, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 
 export default {
@@ -106,9 +111,10 @@ export default {
       name: "",
     });
     store.dispatch("INIT_SOCKET");
-    store.getters.io.on("init_torrents", (torrs) => {
-      torrents.value = torrs;
+    store.getters.io.on("init_torrents", (initTorrents) => {
+      torrents.value = initTorrents;
     });
+
     const addNewTorrent = async () => {
       loading.value = true;
       const payload = {
@@ -117,10 +123,11 @@ export default {
         customDirPath: custom.enabled ? custom.dir.path : "",
         customName: custom.enabled ? custom.name : "",
       };
-      const res = await client.post("/torrent", payload);
-      const data = await res.json();
+
+      const { data, status } = await homeClient.post("/torrent", payload);
+
       torrents.value.push(data);
-      if (res.status !== 201) {
+      if (status !== 201) {
         alert("Something went wrong. Try again!");
       } else {
         dialog.value = false;
@@ -130,16 +137,25 @@ export default {
       loading.value = false;
     };
     const toggleDialog = () => (dialog.value = !dialog.value);
+
     const logout = async () => {
       await localStorage.removeItem("token");
       router.push("/login");
     };
+
     const removeTorrent = (infoHash) => {
       torrents.value = torrents.value.filter((t) => t.infoHash !== infoHash);
     };
 
+    const torrentSearchString = ref("");
+    async function searchTorrents() {
+      const { data } = await ytsClient.get("/list_movies.json");
+      console.log(data);
+    }
+    searchTorrents();
     return {
       addNewTorrent,
+      torrentSearchString,
       logout,
       torrents,
       dialog,
