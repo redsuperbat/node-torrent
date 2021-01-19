@@ -3,7 +3,8 @@ version: "2.1"
 
 services:
   node-torrent:
-    image: maxrsb/node-torrent
+    # image: maxrsb/node-torrent
+    build: .
     container_name: node-torrent
     ports:
       - 3333:3333
