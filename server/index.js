@@ -15,6 +15,8 @@ import { throttleTime } from "rxjs/operators";
 import rimraf from "rimraf";
 import directoryTree from "directory-tree";
 import { crawlPiratebay } from "./torrent-crawling/piratebay.js";
+import { crawlLeetX } from "./torrent-crawling/leetx.js";
+import { crawlZooqle } from "./torrent-crawling/zooqle.js";
 
 // Constants
 const app = express();
@@ -176,11 +178,29 @@ app.delete("/remove/:infoHash", authGuard, (req, res) => {
 app.get("/ping", authGuard);
 
 app.get("/search-torrents", authGuard, async (req, res) => {
-  console.log(req.query);
   const { query } = req.query;
   try {
-    const piratebayTorrents = await crawlPiratebay({ query });
-    res.json(piratebayTorrents);
+    const [leetX, piratebay, zooqle] = await Promise.all([
+      crawlLeetX({ query }),
+      crawlPiratebay({ query }),
+      crawlZooqle({ query }),
+    ]);
+    const torrents = [...leetX, ...piratebay, ...zooqle];
+    torrents.sort((f, s) => s.seeds - f.seeds);
+    res.json(torrents);
+    // merge(from(crawlPiratebay({ query })), from(crawlLeetX({ query })))
+    //   .pipe(
+    //     scan((acc, curr) => {
+    //       return [...acc, ...curr];
+    //     }),
+    //     take(2)
+    //   )
+    //   .subscribe({
+    //     next: (data) => {
+    //       res.writeContinue(JSON.stringify(data));
+    //     },
+    //     complete: () => res.end(),
+    //   });
   } catch (e) {
     console.log(e);
     res.status(500).send();

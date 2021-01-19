@@ -1,5 +1,5 @@
 export class TorrentDataModel {
-  constructor({ leech, seeds, magnetUri, image, uploaded, name, size }) {
+  constructor({ leech, seeds, magnetUri, image, uploaded, name, size, site }) {
     this.leech = leech;
     this.seeds = seeds;
     this.magnetUri = magnetUri;
@@ -7,5 +7,6 @@ export class TorrentDataModel {
     this.name = name;
     this.size = size;
     this.uploaded = uploaded;
+    this.site = site;
   }
 }

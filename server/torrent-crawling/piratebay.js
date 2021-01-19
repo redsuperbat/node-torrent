@@ -21,8 +21,16 @@ export async function crawlPiratebay({ query } = {}) {
     const name = await torrent.$eval(".item-name", (n) => n.innerText);
     const size = await torrent.$eval(".item-size", (s) => s.innerText);
     const uploaded = await torrent.$eval(".item-uploaded", (s) => s.innerText);
-    parsedTorrents.push({ magnetUri, seeds, leech, name, size, uploaded });
+    parsedTorrents.push({
+      magnetUri,
+      seeds,
+      leech,
+      name,
+      size,
+      uploaded,
+      site: "Piratebay",
+    });
   }
-  console.log("Result from TBP", parsedTorrents);
+  console.log("Result from TBP finished");
   return parsedTorrents.map((t) => new TorrentDataModel(t));
 }

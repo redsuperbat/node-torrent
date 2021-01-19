@@ -230,6 +230,7 @@ export default {
       { label: "se", key: "seeds" },
       { label: "le", key: "leech" },
       { label: "Size", key: "size" },
+      { label: "Site", key: "site" },
     ];
 
     return {
