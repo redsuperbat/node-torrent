@@ -1,17 +1,70 @@
 <template>
-  <Toolbar>
-    <template #left>
+  <div class="flex p-4 justify-between bg-gray-800">
+    <div class="flex flex-col items-start">
       <Button label="Add torrent" icon="pi pi-plus" @click="toggleDialog" />
-      <InputText
-        placeholder="Search for torrents"
-        v-model="torrentSearchString"
-      />
-    </template>
+      <div class="mt-2 flex items-center relative">
+        <span class="p-input-icon-right">
+          <i v-if="searchLoading" class="pi pi-spin pi-spinner text-white"></i>
+          <InputText
+            placeholder="Search for torrents"
+            v-model="torrentSearchString"
+          />
+        </span>
 
-    <template #right>
+        <div class="mx-2 text-white flex items-center">
+          <label for="rmov" class="mr-2">Movie</label>
+          <RadioButton
+            id="rmov"
+            :disabled="custom.enabled"
+            name="Film"
+            :value="true"
+            v-model="isMovie"
+          />
+        </div>
+        <div class="flex text-white  items-center ">
+          <label for="rser" class="mr-2">Series</label>
+          <RadioButton
+            id="rser"
+            :value="false"
+            :disabled="custom.enabled"
+            v-model="isMovie"
+            name="Serie"
+          />
+        </div>
+        <OverlayPanel
+          title="Select torrent"
+          class="absolute top-full left-0 bg-white"
+          v-model="showOverlay"
+        >
+          <table class="max-w-full">
+            <tr>
+              <th class="p-1">Name</th>
+              <th class="p-1">Uploaded</th>
+              <th class="p-1">se</th>
+              <th class="p-1">le</th>
+              <th class="p-1">size</th>
+            </tr>
+            <tr
+              v-for="(torrent, i) in searchResults"
+              :key="i"
+              class="hover:bg-gray-200"
+              @click="event(torrent.magnetUri)"
+            >
+              <td class="p-1">{{ torrent.name }}</td>
+              <td class="p-1">{{ torrent.uploaded }}</td>
+              <td class="p-1">{{ torrent.seeds }}</td>
+              <td class="p-1">{{ torrent.leech }}</td>
+              <td class="p-1">{{ torrent.size }}</td>
+            </tr>
+          </table>
+        </OverlayPanel>
+      </div>
+    </div>
+
+    <div class="flex flex-col justify-start h-full">
       <Button label="Logout" @click="logout" />
-    </template>
-  </Toolbar>
+    </div>
+  </div>
 
   <div class="flex flex-col space-y-2">
     <Torrent
@@ -80,7 +133,6 @@
 </template>
 
 <script>
-import Toolbar from "primevue/toolbar";
 import Button from "primevue/button";
 import Dialog from "primevue/dialog";
 import InputText from "primevue/inputtext";
@@ -91,12 +143,24 @@ import ProgressSpinner from "primevue/progressspinner";
 
 import homeClient from "../api/home-client";
 import useRefToObservable from "../hooks/useRefToObservable";
-import useObservable from "../hooks/useObservable";
-import { debounceTime, distinctUntilChanged, filter } from "rxjs/operators";
+import useObservableWithRef from "../hooks/useObservableWithRef";
+import useObservableWithCb from "../hooks/useObservableWithCb";
+import useFromEvent from "../hooks/useFromEvent";
+import {
+  debounceTime,
+  distinctUntilChanged,
+  exhaustMap,
+  filter,
+  map,
+  shareReplay,
+  startWith,
+} from "rxjs/operators";
+import { merge } from "rxjs";
 import { useStore } from "vuex";
 import { defineAsyncComponent, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import client from "../api/home-client";
+import { from } from "rxjs";
 
 export default {
   name: "Home",
@@ -118,16 +182,18 @@ export default {
       torrents.value = initTorrents;
     });
 
-    const addNewTorrent = async () => {
+    const addNewTorrent = async (uri) => {
       loading.value = true;
       const payload = {
-        magnetUri: magnetUri.value,
+        magnetUri: uri || magnetUri.value,
         isMovie: isMovie.value,
         customDirPath: custom.enabled ? custom.dir.path : "",
         customName: custom.enabled ? custom.name : "",
       };
 
-      const { data, status } = await homeClient.post("/torrent", payload);
+      const { data, status } = await homeClient.post("/torrent", {
+        body: payload,
+      });
 
       torrents.value.push(data);
       if (status !== 201) {
@@ -139,6 +205,7 @@ export default {
       }
       loading.value = false;
     };
+
     const toggleDialog = () => (dialog.value = !dialog.value);
 
     const logout = async () => {
@@ -151,38 +218,71 @@ export default {
     };
 
     const torrentSearchString = ref("");
-    const searchString$ = useRefToObservable(torrentSearchString);
-    const searchLoading = ref(false);
-    useObservable(
-      searchString$.pipe(
-        debounceTime(1000),
-        distinctUntilChanged(),
-        filter((v) => v !== "")
-      ),
-      async (value) => {
-        const res = await client.get("/search-torrents", {
-          params: { query: value },
-        });
-        console.log(res.data);
-      }
+    const searchString$ = useRefToObservable(torrentSearchString).pipe(
+      debounceTime(600),
+      distinctUntilChanged(),
+      filter((v) => v !== "")
+    );
+
+    const searchResults$ = searchString$
+      .pipe(
+        exhaustMap((query) =>
+          from(
+            client.get("/search-torrents", {
+              params: { query },
+            })
+          )
+        )
+      )
+      .pipe(
+        map((v) => v.data.slice(0, 20)),
+        shareReplay(1)
+      );
+    const searchLoading$ = merge(
+      searchString$.pipe(map(() => true)),
+      searchResults$.pipe(map(() => false))
+    );
+
+    const { event, obs } = useFromEvent();
+    useObservableWithCb(obs, (magnetUri) => {
+      addNewTorrent(magnetUri);
+      torrentSearchString.value = "";
+    });
+
+    const searchLoading = useObservableWithRef(searchLoading$);
+    const searchResults = useObservableWithRef(searchResults$);
+    const showOverlay = useObservableWithRef(
+      merge(
+        searchResults$.pipe(
+          map(() => true),
+          startWith(false)
+        ),
+        useRefToObservable(torrentSearchString).pipe(
+          filter((v) => v === ""),
+          map(() => false)
+        )
+      )
     );
 
     return {
       addNewTorrent,
       torrentSearchString,
+      event,
       logout,
       torrents,
       dialog,
       isMovie,
       magnetUri,
+      searchLoading,
       toggleDialog,
       loading,
       removeTorrent,
       custom,
+      searchResults,
+      showOverlay,
     };
   },
   components: {
-    Toolbar,
     Dialog,
     Button,
     Torrent,
@@ -191,6 +291,9 @@ export default {
     ProgressSpinner,
     // This lazy loads the component when it is rendered
     FileTree: defineAsyncComponent(() => import("@/components/FileTree")),
+    OverlayPanel: defineAsyncComponent(() =>
+      import("@/components/OverlayPanel")
+    ),
     InputText,
   },
 };

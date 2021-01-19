@@ -46,7 +46,12 @@ class ApiClient {
       return Promise.reject(
         new Error({ message: response.statusText, response })
       );
-    const data = await response.json();
+
+    let data;
+    const contentType = response.headers.get("content-type");
+    if (contentType && contentType.indexOf("application/json") !== -1) {
+      data = await response.json();
+    }
     const { statusText, status, headers } = response;
     return { data, headers, statusText, status };
   }
@@ -61,7 +66,6 @@ class ApiClient {
     const requestUrl = `${this.baseUrl || ""}${url}${
       params ? "?" + params : ""
     }`;
-    console.log(requestUrl);
 
     let finalHeaders = {};
     if (!this.cors) {

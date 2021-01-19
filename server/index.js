@@ -74,6 +74,8 @@ app.post("/login", (req, res) => {
 
 app.post("/torrent", authGuard, (req, res, next) => {
   const { magnetUri, isMovie, customDirPath, customName } = req.body;
+  if (!magnetUri)
+    return res.status(400).json({ message: "Invalid magnet uri", magnetUri });
   const torrent = client.add(magnetUri);
 
   console.log(req.body);
