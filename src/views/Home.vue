@@ -5,13 +5,18 @@
       <div class="mt-2 flex items-center relative">
         <span class="p-input-icon-right">
           <i v-if="searchLoading" class="pi pi-spin pi-spinner text-white"></i>
+          <i
+            v-else
+            class="pi pi-refresh text-white cursor-pointer"
+            @click="() => onHardRefresh(torrentSearchString)"
+          />
           <InputText
             placeholder="Search for torrents"
             v-model="torrentSearchString"
           />
         </span>
         <PathSelector
-          v-model:path="custom.path"
+          v-model:path="custom.dir"
           v-model:isMovie="isMovie"
           @update:isCustom="(v) => (custom.enabled = v)"
         />
@@ -30,7 +35,7 @@
               v-for="(torrent, i) in searchResults"
               :key="i"
               class="hover:bg-gray-200"
-              @click="event(torrent.magnetUri)"
+              @click="quickAddTorrent(torrent.magnetUri)"
             >
               <td class="p-2" v-for="(item, i) in tableHeader" :key="i">
                 {{ torrent[item.key] }}
@@ -101,6 +106,7 @@ import {
   exhaustMap,
   filter,
   map,
+  mapTo,
   shareReplay,
   startWith,
 } from "rxjs/operators";
@@ -123,7 +129,7 @@ export default {
     const loading = ref(false);
     const custom = reactive({
       enabled: false,
-      dir: null,
+      dir: {},
       name: "",
     });
     store.dispatch("INIT_SOCKET");
@@ -167,10 +173,14 @@ export default {
     };
 
     const torrentSearchString = ref("");
-    const searchString$ = useObsFromRef(torrentSearchString).pipe(
-      debounceTime(600),
-      distinctUntilChanged(),
-      filter((v) => v !== "")
+    const [onHardRefresh, onHardRefresh$] = useObsFromEvent();
+    const searchString$ = merge(
+      useObsFromRef(torrentSearchString).pipe(
+        debounceTime(600),
+        distinctUntilChanged(),
+        filter((v) => v !== "")
+      ),
+      onHardRefresh$
     );
 
     const searchResults$ = searchString$
@@ -193,8 +203,8 @@ export default {
       searchResults$.pipe(map(() => false))
     );
 
-    const [event] = useObsFromEvent((magnetUri) => {
-      addNewTorrent(magnetUri);
+    const [quickAddTorrent] = useObsFromEvent(async (magnetUri) => {
+      await addNewTorrent(magnetUri);
       torrentSearchString.value = "";
     });
 
@@ -209,7 +219,8 @@ export default {
         useObsFromRef(torrentSearchString).pipe(
           filter((v) => v === ""),
           map(() => false)
-        )
+        ),
+        onHardRefresh$.pipe(mapTo(false))
       )
     );
 
@@ -224,7 +235,7 @@ export default {
     return {
       addNewTorrent,
       torrentSearchString,
-      event,
+      quickAddTorrent,
       logout,
       torrents,
       dialog,
@@ -238,6 +249,7 @@ export default {
       searchResults,
       showOverlay,
       tableHeader,
+      onHardRefresh,
     };
   },
   components: {
@@ -246,7 +258,6 @@ export default {
     Torrent,
     ProgressSpinner,
     // This lazy loads the component when it is rendered
-    // FileTree: defineAsyncComponent(() => import("@/components/FileTree")),
     OverlayPanel: defineAsyncComponent(() =>
       import("@/components/OverlayPanel")
     ),

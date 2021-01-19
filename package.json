@@ -5,19 +5,19 @@
   "scripts": {
     "transpile": "babel ./server --out-dir dist-server && cp ./server/tokens.json ./dist-server/",
     "client:dev": "vue-cli-service build --watch",
-    "build:client": "vue-cli-service build",
+    "client:build": "vue-cli-service build",
     "clean": "rimraf dist-server",
     "start": "node ./dist-server/index.js",
-    "build": "npm run build:server && vue-cli-service build",
+    "build": "npm run server:build && vue-cli-service build",
     "kill": "kill $(lsof -t -i:3030) | exit 0",
     "dev": "npm run vue:dev & npm run watch:dev",
-    "build:server": "npm run clean && npm run transpile",
+    "server:build": "npm run clean && npm run transpile",
     "server:dev": "nodemon",
-    "serve": "vue-cli-service serve",
+    "serve": "vue-cli-service serve --port 3030",
     "crawl": "NODE_ENV=dev&& npm run transpile && node ./dist-server/torrent-crawling/piratebay.js"
   },
   "nodemonConfig": {
-    "exec": "npm run kill && npm run build:server && npm run start",
+    "exec": "npm run kill && npm run server:build && npm run start",
     "watch": [
       "server/*"
     ],
