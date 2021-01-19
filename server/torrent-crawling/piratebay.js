@@ -23,6 +23,6 @@ export async function crawlPiratebay({ query } = {}) {
     const uploaded = await torrent.$eval(".item-uploaded", (s) => s.innerText);
     parsedTorrents.push({ magnetUri, seeds, leech, name, size, uploaded });
   }
-
+  console.log("Result from TBP", parsedTorrents);
   return parsedTorrents.map((t) => new TorrentDataModel(t));
 }

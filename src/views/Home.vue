@@ -10,7 +10,11 @@
             v-model="torrentSearchString"
           />
         </span>
-        <PathSelector v-model:path="custom.path" v-model:isMovie="isMovie" />
+        <PathSelector
+          v-model:path="custom.path"
+          v-model:isMovie="isMovie"
+          @update:isCustom="(v) => (custom.enabled = v)"
+        />
         <OverlayPanel
           title="Select torrent"
           class="absolute top-full left-0 bg-white"
@@ -18,11 +22,9 @@
         >
           <table class="max-w-full">
             <tr>
-              <th class="p-2">Name</th>
-              <th class="p-2">Uploaded</th>
-              <th class="p-2">se</th>
-              <th class="p-2">le</th>
-              <th class="p-2">size</th>
+              <th class="p-2" v-for="(item, i) in tableHeader" :key="i">
+                {{ item.label }}
+              </th>
             </tr>
             <tr
               v-for="(torrent, i) in searchResults"
@@ -30,11 +32,9 @@
               class="hover:bg-gray-200"
               @click="event(torrent.magnetUri)"
             >
-              <td class="p-2">{{ torrent.name }}</td>
-              <td class="p-2">{{ torrent.uploaded }}</td>
-              <td class="p-2">{{ torrent.seeds }}</td>
-              <td class="p-2">{{ torrent.leech }}</td>
-              <td class="p-2">{{ torrent.size }}</td>
+              <td class="p-2" v-for="(item, i) in tableHeader" :key="i">
+                {{ torrent[item.key] }}
+              </td>
             </tr>
           </table>
         </OverlayPanel>
@@ -57,47 +57,20 @@
   <Dialog header="Add magnet uri" v-model:visible="dialog">
     <div class="flex flex-col">
       <InputText v-model="magnetUri" placeholder="Magnet uri" />
-      <div class="flex my-2 space-x-2">
-        <div class="flex items-center space-x-2">
-          <label for="rmov">Movie</label>
-          <RadioButton
-            id="rmov"
-            :disabled="custom.enabled"
-            name="Film"
-            :value="true"
-            v-model="isMovie"
-          />
-        </div>
-        <div class="flex items-center space-x-2">
-          <label for="rser">Series</label>
-          <RadioButton
-            id="rser"
-            :value="false"
-            :disabled="custom.enabled"
-            v-model="isMovie"
-            name="Serie"
-          />
-        </div>
-        <div class="flex items-center space-x-2">
-          <label for="custom">Custom</label>
-          <CheckBox id="custom" :binary="true" v-model="custom.enabled" />
-        </div>
-      </div>
 
       <div class="flex flex-col" v-if="custom.enabled">
-        <FileTree v-model="custom.dir" />
         <div class="flex flex-col">
-          <label for="customName" class="font-sm"
-            >Custom foldername (leave empty for default)</label
-          >
+          <label for="customName" class="font-sm">
+            Custom foldername (leave empty for default)
+          </label>
           <InputText
             id="customName"
             aria-describedby="username2-help"
             v-model="custom.name"
           />
-          <small id="username2-help" class="font-xs"
-            >Nice if you're downloading seasonally</small
-          >
+          <small id="username2-help" class="font-xs">
+            Nice if you're downloading seasonally
+          </small>
         </div>
       </div>
 
@@ -240,6 +213,14 @@ export default {
       )
     );
 
+    const tableHeader = [
+      { label: "Name", key: "name" },
+      { label: "Uplaoded", key: "uploaded" },
+      { label: "se", key: "seeds" },
+      { label: "le", key: "leech" },
+      { label: "Size", key: "size" },
+    ];
+
     return {
       addNewTorrent,
       torrentSearchString,
@@ -256,6 +237,7 @@ export default {
       custom,
       searchResults,
       showOverlay,
+      tableHeader,
     };
   },
   components: {
@@ -264,7 +246,7 @@ export default {
     Torrent,
     ProgressSpinner,
     // This lazy loads the component when it is rendered
-    FileTree: defineAsyncComponent(() => import("@/components/FileTree")),
+    // FileTree: defineAsyncComponent(() => import("@/components/FileTree")),
     OverlayPanel: defineAsyncComponent(() =>
       import("@/components/OverlayPanel")
     ),

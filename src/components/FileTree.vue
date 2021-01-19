@@ -33,7 +33,9 @@ export default {
         return props.modelValue;
       },
       set(dir) {
-        emit("update:modelValue", dir);
+        if (dir.type === "directory") {
+          emit("update:modelValue", dir);
+        }
       },
     });
 

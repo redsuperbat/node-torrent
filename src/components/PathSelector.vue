@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col items-center p-2">
+  <div class="flex p-2 space-x-2">
     <div class="flex items-center space-x-2 text-white">
       <label for="rmov">Movie</label>
       <RadioButton
@@ -19,8 +19,21 @@
       />
     </div>
     <div class="relative">
-      <Button @click="setPath" :label="buttonLabel" class="w-full" />
-      <div class="absolute" v-if="showPathPicker">
+      <Button @click="setPath" class="w-full">
+        <small>{{ buttonLabel }}</small>
+      </Button>
+      <div
+        class="absolute flex flex-col bg-dark-theme rounded shadow-xl"
+        v-if="showPathPicker"
+      >
+        <div class="flex items-center py-1 px-4 justify-between">
+          <h1 class="text-white text-lg font-bold">Select custom path</h1>
+          <Button
+            icon="pi pi-times"
+            class="p-button-rounded p-button-sm"
+            @click="onPathPickerClose"
+          />
+        </div>
         <FileTree v-model="computedPath" />
       </div>
     </div>
@@ -28,39 +41,53 @@
 </template>
 
 <script>
-import FileTree from "./FileTree.vue";
-
 import useObsFromEvent from "../hooks/useObsFromEvent";
-import { map, mapTo, tap } from "rxjs/operators";
+import { map, mapTo, startWith, tap } from "rxjs/operators";
 import useObservable from "../hooks/useObservable";
 import useObsFromRef from "../hooks/useObsFromRef";
 import useModelValue from "../hooks/useModelValue";
 import { merge } from "rxjs";
+import { defineAsyncComponent } from "vue";
 export default {
   setup(props, { emit }) {
     const computedPath = useModelValue(props, emit, "path");
     const computedIsMovie = useModelValue(props, emit, "isMovie");
-    const defaultBtnLabel = "Choose Path";
+    const defaultBtnLabel = "Choose custom path";
     const [setPath, setPath$] = useObsFromEvent();
     const onPathSelect$ = useObsFromRef(computedPath);
     const buttonLabel$ = merge(
       setPath$.pipe(mapTo(defaultBtnLabel)),
       onPathSelect$.pipe(
-        map((v) => v.path),
-        tap(console.log)
+        map((v) => {
+          if (v.path.length > 75) {
+            return "..." + v.path.slice(-75);
+          }
+          return v.path;
+        })
       )
     );
-    const buttonLabel = useObservable(buttonLabel$, {
-      initalState: defaultBtnLabel,
+
+    const buttonLabel = useObservable(
+      buttonLabel$.pipe(startWith(defaultBtnLabel))
+    );
+
+    const [onPathPickerClose, onPathPickerClose$] = useObsFromEvent();
+    const [onClickOutside, onClickOutside$] = useObsFromEvent();
+    const showPathPicker$ = merge(
+      setPath$.pipe(mapTo(true)),
+      onPathSelect$.pipe(mapTo(false)),
+      onPathPickerClose$.pipe(mapTo(false)),
+      onClickOutside$.pipe(mapTo(false))
+    );
+    const showPathPicker = useObservable(showPathPicker$, {
+      initalState: false,
     });
     const radioBtnsDisabled = useObservable(
-      buttonLabel$.pipe(map((v) => v === defaultBtnLabel))
-    );
-    const showPathPicker = useObservable(
-      merge(setPath$.pipe(mapTo(true)), onPathSelect$.pipe(mapTo(false))),
-      {
-        initalState: false,
-      }
+      merge(buttonLabel$.pipe(map((v) => v !== defaultBtnLabel))).pipe(
+        tap((v) => {
+          emit("update:isCustom", v);
+        })
+      )
     );
 
     return {
@@ -70,6 +97,8 @@ export default {
       showPathPicker,
       radioBtnsDisabled,
       computedIsMovie,
+      onPathPickerClose,
+      onClickOutside,
     };
   },
   props: {
@@ -77,7 +106,7 @@ export default {
     isMovie: Boolean,
   },
   components: {
-    FileTree,
+    FileTree: defineAsyncComponent(() => import("./FileTree.vue")),
   },
 };
 </script>
