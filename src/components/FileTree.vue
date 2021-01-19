@@ -1,6 +1,12 @@
 <template>
   <div>
-    <Tree :value="treeStruct" selectionMode="single" @node-select="nodeSelect">
+    <ProgressSpinner v-if="loading" style="width:25px;height:25px" />
+    <Tree
+      v-else
+      :value="treeStruct"
+      selectionMode="single"
+      @node-select="nodeSelect"
+    >
       <template #default="slotProps">
         <div class="truncate w-48 sm:w-80">
           <b>{{ slotProps.node.label }}</b>
@@ -12,6 +18,8 @@
 
 <script>
 import Tree from "primevue/tree";
+import ProgressSpinner from "primevue/progressspinner";
+
 import client from "../api/home-client";
 import { computed, ref } from "vue";
 import { v4 } from "uuid";
@@ -57,19 +65,24 @@ export default {
       };
     };
 
-    client.get("/fileTree").then(({ data }) => {
-      const nodes = formatStruct(data.children);
-      treeStruct.value = nodes;
-    });
+    const loading = ref(true);
+    client
+      .get("/fileTree")
+      .then(({ data }) => {
+        const nodes = formatStruct(data.children);
+        treeStruct.value = nodes;
+      })
+      .finally(() => (loading.value = false));
 
     const nodeSelect = (node) => {
       selectedDir.value = node;
     };
 
-    return { treeStruct, nodeSelect };
+    return { treeStruct, nodeSelect, loading };
   },
   components: {
     Tree,
+    ProgressSpinner,
   },
   props: {
     modelValue: Object,

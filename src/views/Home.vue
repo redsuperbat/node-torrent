@@ -10,27 +10,7 @@
             v-model="torrentSearchString"
           />
         </span>
-
-        <div class="mx-2 text-white flex items-center">
-          <label for="rmov" class="mr-2">Movie</label>
-          <RadioButton
-            id="rmov"
-            :disabled="custom.enabled"
-            name="Film"
-            :value="true"
-            v-model="isMovie"
-          />
-        </div>
-        <div class="flex text-white  items-center ">
-          <label for="rser" class="mr-2">Series</label>
-          <RadioButton
-            id="rser"
-            :value="false"
-            :disabled="custom.enabled"
-            v-model="isMovie"
-            name="Serie"
-          />
-        </div>
+        <PathSelector v-model:path="custom.path" v-model:isMovie="isMovie" />
         <OverlayPanel
           title="Select torrent"
           class="absolute top-full left-0 bg-white"
@@ -135,6 +115,7 @@
 <script>
 import Dialog from "primevue/dialog";
 import Torrent from "@/components/Torrent.vue";
+import PathSelector from "@/components/PathSelector.vue";
 import ProgressSpinner from "primevue/progressspinner";
 
 import homeClient from "../api/home-client";
@@ -279,6 +260,7 @@ export default {
   },
   components: {
     Dialog,
+    PathSelector,
     Torrent,
     ProgressSpinner,
     // This lazy loads the component when it is rendered

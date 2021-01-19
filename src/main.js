@@ -18,5 +18,5 @@ createApp(App)
   .component("Button", Button)
   .component("InputText", InputText)
   .component("RadioButton", RadioButton)
-  .component("Checkbox", CheckBox)
+  .component("CheckBox", CheckBox)
   .mount("#app");

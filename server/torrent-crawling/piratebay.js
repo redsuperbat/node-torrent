@@ -3,7 +3,7 @@ import { TorrentDataModel } from "./torrent-data-model";
 
 export async function crawlPiratebay({ query } = {}) {
   const queryString = query?.replaceAll(" ", "+");
-  const url = `https://thepiratebay.org/search.php?q=${queryString}`;
+  const url = `https://thepiratebay.org/search.php?q=${queryString}&video=on`;
   console.log("Querying TPB", url);
   const page = await createCrawler();
   await page.goto(url);

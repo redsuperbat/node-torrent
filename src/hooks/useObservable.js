@@ -1,6 +1,6 @@
 import { onUnmounted, ref } from "vue";
 
-const useObservable = (obs, { cb, initalState }) => {
+const useObservable = (obs, { cb, initalState } = {}) => {
   const reference = ref(initalState);
 
   const sub = obs.subscribe((emittedValue) => {
