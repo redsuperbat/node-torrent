@@ -14,15 +14,18 @@
           icon="pi pi-play"
           @click="resume"
           class="p-button-rounded p-button-sm"
+          :disabled="loading"
           v-if="paused"
         />
         <Button
+          :disabled="loading"
           icon="pi pi-pause"
           @click="pause"
           class="p-button-rounded p-button-sm"
           v-else
         />
         <Button
+          :disabled="loading"
           @click="toggleDialog"
           icon="pi pi-times"
           class="p-button-rounded p-button-sm"

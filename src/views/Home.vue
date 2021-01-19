@@ -38,11 +38,11 @@
         >
           <table class="max-w-full">
             <tr>
-              <th class="p-1">Name</th>
-              <th class="p-1">Uploaded</th>
-              <th class="p-1">se</th>
-              <th class="p-1">le</th>
-              <th class="p-1">size</th>
+              <th class="p-2">Name</th>
+              <th class="p-2">Uploaded</th>
+              <th class="p-2">se</th>
+              <th class="p-2">le</th>
+              <th class="p-2">size</th>
             </tr>
             <tr
               v-for="(torrent, i) in searchResults"
@@ -50,11 +50,11 @@
               class="hover:bg-gray-200"
               @click="event(torrent.magnetUri)"
             >
-              <td class="p-1">{{ torrent.name }}</td>
-              <td class="p-1">{{ torrent.uploaded }}</td>
-              <td class="p-1">{{ torrent.seeds }}</td>
-              <td class="p-1">{{ torrent.leech }}</td>
-              <td class="p-1">{{ torrent.size }}</td>
+              <td class="p-2">{{ torrent.name }}</td>
+              <td class="p-2">{{ torrent.uploaded }}</td>
+              <td class="p-2">{{ torrent.seeds }}</td>
+              <td class="p-2">{{ torrent.leech }}</td>
+              <td class="p-2">{{ torrent.size }}</td>
             </tr>
           </table>
         </OverlayPanel>
@@ -133,19 +133,14 @@
 </template>
 
 <script>
-import Button from "primevue/button";
 import Dialog from "primevue/dialog";
-import InputText from "primevue/inputtext";
 import Torrent from "@/components/Torrent.vue";
-import RadioButton from "primevue/radiobutton";
-import CheckBox from "primevue/checkbox";
 import ProgressSpinner from "primevue/progressspinner";
 
 import homeClient from "../api/home-client";
-import useRefToObservable from "../hooks/useRefToObservable";
-import useObservableWithRef from "../hooks/useObservableWithRef";
-import useObservableWithCb from "../hooks/useObservableWithCb";
-import useFromEvent from "../hooks/useFromEvent";
+import useObsFromRef from "../hooks/useObsFromRef";
+import useObservable from "../hooks/useObservable";
+import useObsFromEvent from "../hooks/useObsFromEvent";
 import {
   debounceTime,
   distinctUntilChanged,
@@ -218,7 +213,7 @@ export default {
     };
 
     const torrentSearchString = ref("");
-    const searchString$ = useRefToObservable(torrentSearchString).pipe(
+    const searchString$ = useObsFromRef(torrentSearchString).pipe(
       debounceTime(600),
       distinctUntilChanged(),
       filter((v) => v !== "")
@@ -238,26 +233,26 @@ export default {
         map((v) => v.data.slice(0, 20)),
         shareReplay(1)
       );
+
     const searchLoading$ = merge(
       searchString$.pipe(map(() => true)),
       searchResults$.pipe(map(() => false))
     );
 
-    const { event, obs } = useFromEvent();
-    useObservableWithCb(obs, (magnetUri) => {
+    const [event] = useObsFromEvent((magnetUri) => {
       addNewTorrent(magnetUri);
       torrentSearchString.value = "";
     });
 
-    const searchLoading = useObservableWithRef(searchLoading$);
-    const searchResults = useObservableWithRef(searchResults$);
-    const showOverlay = useObservableWithRef(
+    const searchLoading = useObservable(searchLoading$);
+    const searchResults = useObservable(searchResults$);
+    const showOverlay = useObservable(
       merge(
         searchResults$.pipe(
           map(() => true),
           startWith(false)
         ),
-        useRefToObservable(torrentSearchString).pipe(
+        useObsFromRef(torrentSearchString).pipe(
           filter((v) => v === ""),
           map(() => false)
         )
@@ -284,17 +279,13 @@ export default {
   },
   components: {
     Dialog,
-    Button,
     Torrent,
-    CheckBox,
-    RadioButton,
     ProgressSpinner,
     // This lazy loads the component when it is rendered
     FileTree: defineAsyncComponent(() => import("@/components/FileTree")),
     OverlayPanel: defineAsyncComponent(() =>
       import("@/components/OverlayPanel")
     ),
-    InputText,
   },
 };
 </script>

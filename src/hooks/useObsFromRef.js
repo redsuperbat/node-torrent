@@ -1,7 +1,7 @@
 import { Subject } from "rxjs";
 import { watch } from "vue";
 
-const useRefToObservable = (ref) => {
+const useObsFromRef = (ref) => {
   const subject = new Subject();
   watch(ref, (value) => {
     subject.next(value);
@@ -10,4 +10,4 @@ const useRefToObservable = (ref) => {
   return subject.asObservable();
 };
 
-export default useRefToObservable;
+export default useObsFromRef;
