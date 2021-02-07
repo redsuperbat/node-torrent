@@ -41,7 +41,7 @@
 </template>
 
 <script>
-import { map, mapTo, startWith, tap } from "rxjs/operators";
+import { map, mapTo } from "rxjs/operators";
 import {
   useObservable,
   useObsFromRef,
@@ -61,7 +61,10 @@ export default {
       setPath$.pipe(mapTo(defaultBtnLabel)),
       onPathSelect$.pipe(
         map((v) => {
-          if (v.path.length > 75) {
+          if (!v.path) {
+            return defaultBtnLabel;
+          }
+          if (v && v.path && v.path.length > 75) {
             return "..." + v.path.slice(-75);
           }
           return v.path;
@@ -69,28 +72,27 @@ export default {
       )
     );
 
-    const buttonLabel = useObservable(
-      buttonLabel$.pipe(startWith(defaultBtnLabel))
-    );
+    const buttonLabel = useObservable(buttonLabel$);
 
     const [onPathPickerClose, onPathPickerClose$] = useObsFromEvent();
-    const [onClickOutside, onClickOutside$] = useObsFromEvent();
     const showPathPicker$ = merge(
       setPath$.pipe(mapTo(true)),
       onPathSelect$.pipe(mapTo(false)),
-      onPathPickerClose$.pipe(mapTo(false)),
-      onClickOutside$.pipe(mapTo(false))
+      onPathPickerClose$.pipe(mapTo(false))
     );
     const showPathPicker = useObservable(showPathPicker$, {
       initalState: false,
     });
     const radioBtnsDisabled = useObservable(
-      merge(buttonLabel$.pipe(map((v) => v !== defaultBtnLabel))).pipe(
-        tap((v) => {
-          emit("update:isCustom", v);
-        })
-      )
+      buttonLabel$.pipe(map((label) => label !== defaultBtnLabel))
     );
+
+    // Whenever buttonlabel changes, emit the new label
+    useObservable(buttonLabel$, {
+      cb: (label) => {
+        emit("update:isCustom", label);
+      },
+    });
 
     return {
       computedPath,
@@ -100,7 +102,6 @@ export default {
       radioBtnsDisabled,
       computedIsMovie,
       onPathPickerClose,
-      onClickOutside,
     };
   },
   props: {

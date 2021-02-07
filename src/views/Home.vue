@@ -4,7 +4,7 @@
       <Button label="Add torrent" icon="pi pi-plus" @click="toggleDialog" />
       <div class="mt-2 flex items-center relative">
         <span class="p-input-icon-right">
-          <i v-if="searchLoading" class="pi pi-spin pi-spinner text-white"></i>
+          <i v-if="searchLoading" class="pi pi-spinner animate-spin"></i>
           <i
             v-else
             class="pi pi-refresh text-white cursor-pointer"
@@ -25,7 +25,32 @@
           class="absolute top-full left-0 bg-white"
           v-model="showOverlay"
         >
-          <table class="max-w-full">
+          <div class="p-2">
+            <div
+              v-for="(torrent, i) in searchResults"
+              :key="i"
+              class="hover:bg-gray-200 p-2 flex justify-between items-center"
+              @click="quickAddTorrent(torrent.magnetUri)"
+            >
+              <div class="flex flex-col">
+                <h1 class="font-bold">{{ torrent.name }}</h1>
+                <p>{{ torrent.uploaded }}</p>
+                <div class="flex space-x-2">
+                  <h1>
+                    Seeds:
+                  </h1>
+                  <p>{{ torrent.seeds }}</p>
+                  <h1>
+                    Leech:
+                  </h1>
+                  <p>{{ torrent.leech }}</p>
+                </div>
+                <p>{{ torrent.site }}</p>
+              </div>
+              <h1 class="w-24 text-right">{{ torrent.size }}</h1>
+            </div>
+          </div>
+          <!-- <table class="max-w-full">
             <tr>
               <th class="p-2" v-for="(item, i) in tableHeader" :key="i">
                 {{ item.label }}
@@ -41,7 +66,7 @@
                 {{ torrent[item.key] }}
               </td>
             </tr>
-          </table>
+          </table> -->
         </OverlayPanel>
       </div>
     </div>

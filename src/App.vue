@@ -3,10 +3,5 @@
 </template>
 
 <script>
-//import client from "./api/client";
-export default {
-  setup() {
-    //
-  },
-};
+export default {};
 </script>

@@ -41,10 +41,14 @@ export default {
 
     // recursivly traverses the json-structure
     // and modifies it for the Tree component
+    // Three cases are handled
     const formatStruct = (struct) => {
+      // If we are at the root level call formatStruct recusivly
       if (Array.isArray(struct)) {
         return struct.map((s) => formatStruct(s));
       }
+      // If we are at a leaf node which is a file
+      // compile data and return
       if (struct.type === "file") {
         const file = {
           label: struct.name,
