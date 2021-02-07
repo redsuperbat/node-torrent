@@ -62,10 +62,11 @@ export default {
   setup(props, { emit }) {
     const store = useStore();
     const dialog = ref(false);
-    const paused = ref(false);
+    const paused = ref(props.torrent.paused);
     const loading = ref(false);
 
     function formatBytes(bytes, decimals = 2) {
+      if (!bytes) return;
       if (bytes === 0) return "0 Bytes";
       const k = 1024;
       const dm = decimals < 0 ? 0 : decimals;
@@ -85,17 +86,21 @@ export default {
       savePath: "",
     });
 
-    const parseTorrent = (torrent) => ({
-      progress: Math.round(torrent.progress * 1000) / 10,
-      uploadSpeed: formatBytes(torrent.uploadSpeed),
-      downloadSpeed: formatBytes(torrent.downloadSpeed),
-      uploaded: formatBytes(torrent.uploaded),
-      downloaded: formatBytes(torrent.downloaded),
-      size: formatBytes(torrent.size),
-      peers: torrent.peers,
-      timeRemaining: torrent.timeRemaining,
-      savePath: torrent.savePath,
-    });
+    parsedTorrent.value = parseTorrent(props.torrent);
+    function parseTorrent(torrent) {
+      return {
+        progress: Math.round(torrent.progress * 1000) / 10,
+        uploadSpeed: formatBytes(torrent.uploadSpeed),
+        downloadSpeed: formatBytes(torrent.downloadSpeed),
+        uploaded: formatBytes(torrent.uploaded),
+        downloaded:
+          formatBytes(torrent.downloaded) || formatBytes(torrent.size),
+        size: formatBytes(torrent.size),
+        peers: torrent.peers,
+        timeRemaining: torrent.timeRemaining,
+        savePath: torrent.savePath,
+      };
+    }
 
     store.getters.io.on(props.torrent.infoHash, (t) => {
       parsedTorrent.value = parseTorrent(t);

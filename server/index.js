@@ -59,6 +59,7 @@ io.on("connection", () => {
     progress: t.progress,
     uploaded: t.uploaded,
     size: t.length,
+    paused: t.paused,
   }));
   io.emit("init_torrents", torrents);
 });
