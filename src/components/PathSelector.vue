@@ -41,11 +41,13 @@
 </template>
 
 <script>
-import useObsFromEvent from "../hooks/useObsFromEvent";
 import { map, mapTo, startWith, tap } from "rxjs/operators";
-import useObservable from "../hooks/useObservable";
-import useObsFromRef from "../hooks/useObsFromRef";
-import useModelValue from "../hooks/useModelValue";
+import {
+  useObservable,
+  useObsFromRef,
+  useModelValue,
+  useObsFromEvent,
+} from "use-rx-vue";
 import { merge } from "rxjs";
 import { defineAsyncComponent } from "vue";
 export default {

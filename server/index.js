@@ -56,6 +56,9 @@ io.on("connection", () => {
   const torrents = client.torrents.map((t) => ({
     name: t.name,
     infoHash: t.infoHash,
+    progress: t.progress,
+    uploaded: t.uploaded,
+    size: t.length,
   }));
   io.emit("init_torrents", torrents);
 });
@@ -180,27 +183,21 @@ app.get("/ping", authGuard);
 app.get("/search-torrents", authGuard, async (req, res) => {
   const { query } = req.query;
   try {
-    const [leetX, piratebay, zooqle] = await Promise.all([
+    const results = await Promise.allSettled([
       crawlLeetX({ query }),
       crawlPiratebay({ query }),
       crawlZooqle({ query }),
     ]);
-    const torrents = [...leetX, ...piratebay, ...zooqle];
+    const torrents = [];
+    results.forEach((res) => {
+      if (res.status === "fulfilled") {
+        torrents.push(...res.value);
+      }
+    });
+
+    // sort by seeds
     torrents.sort((f, s) => s.seeds - f.seeds);
     res.json(torrents);
-    // merge(from(crawlPiratebay({ query })), from(crawlLeetX({ query })))
-    //   .pipe(
-    //     scan((acc, curr) => {
-    //       return [...acc, ...curr];
-    //     }),
-    //     take(2)
-    //   )
-    //   .subscribe({
-    //     next: (data) => {
-    //       res.writeContinue(JSON.stringify(data));
-    //     },
-    //     complete: () => res.end(),
-    //   });
   } catch (e) {
     console.log(e);
     res.status(500).send();

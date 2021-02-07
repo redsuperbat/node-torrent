@@ -97,9 +97,7 @@ import PathSelector from "@/components/PathSelector.vue";
 import ProgressSpinner from "primevue/progressspinner";
 
 import homeClient from "../api/home-client";
-import useObsFromRef from "../hooks/useObsFromRef";
-import useObservable from "../hooks/useObservable";
-import useObsFromEvent from "../hooks/useObsFromEvent";
+import { useObsFromEvent, useObservable, useObsFromRef } from "use-rx-vue";
 import {
   debounceTime,
   distinctUntilChanged,

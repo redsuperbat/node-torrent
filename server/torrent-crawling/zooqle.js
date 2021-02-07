@@ -6,7 +6,7 @@ export async function crawlZooqle({ query } = {}) {
   const page = await createCrawler();
   await page.goto(`https://zooqle.com/search?q=${searchString}`);
 
-  const torrents = await page.$$("tbody >> tr");
+  const torrents = (await page.$$("tbody >> tr")).slice(0, 5);
   const parsedTorrents = [];
   for await (const torrent of torrents) {
     try {
@@ -47,6 +47,6 @@ export async function crawlZooqle({ query } = {}) {
       console.log(e);
     }
   }
-  console.log("Result from TBP finished", parsedTorrents);
+  console.log("Result from Zooqle finished");
   return parsedTorrents.map((t) => new TorrentDataModel(t));
 }
