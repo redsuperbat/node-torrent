@@ -187,7 +187,7 @@ export default {
     const toggleDialog = () => (dialog.value = !dialog.value);
 
     const logout = async () => {
-      await localStorage.removeItem("token");
+      localStorage.removeItem("token");
       router.push("/login");
     };
 
